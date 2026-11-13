@@ -8,6 +8,7 @@ const MAX_BODY_BYTES = 64 * 1024;
 
 export default {
   async fetch(request, env) {
+    const started = Date.now();
     const cors = corsHeaders(request, env);
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: cors });
@@ -30,46 +31,74 @@ export default {
     try {
       const text = await request.text();
       if (text.length > MAX_BODY_BYTES) {
-        return json({ status: "invalid", reason: "too_large" }, 200, cors);
+        return reply(path, {}, { status: "invalid", reason: "too_large" }, started, cors);
       }
       body = JSON.parse(text);
     } catch {
       return json({ status: "invalid", reason: "bad_json" }, 400, cors);
     }
     if (typeof body !== "object" || body === null || Array.isArray(body)) {
-      return json({ status: "invalid", reason: "bad_shape" }, 200, cors);
+      return reply(path, {}, { status: "invalid", reason: "bad_shape" }, started, cors);
     }
     if (body.protocol !== PROTOCOL) {
-      return json({ status: "incompatible", protocol: PROTOCOL }, 200, cors);
+      return reply(path, body, { status: "incompatible", protocol: PROTOCOL }, started, cors);
     }
 
     const now = Math.floor(Date.now() / 1000);
     try {
+      let result;
       switch (path) {
         case "/v1/exchange": {
           const reason = validateExchange(body);
-          if (reason) return json({ status: "invalid", reason }, 200, cors);
-          return json(await exchange(env, body, now), 200, cors);
+          result = reason ? { status: "invalid", reason } : await exchange(env, body, now);
+          break;
         }
         case "/v1/rebuild-failed": {
           const reason = validateHygiene(body);
-          if (reason) return json({ status: "invalid", reason }, 200, cors);
-          return json(await rebuildFailed(env, body, now), 200, cors);
+          result = reason ? { status: "invalid", reason } : await rebuildFailed(env, body, now);
+          break;
         }
         case "/v1/report": {
           const reason = validateEncounterRef(body);
-          if (reason) return json({ status: "invalid", reason }, 200, cors);
-          return json(await report(env, body, now), 200, cors);
+          result = reason ? { status: "invalid", reason } : await report(env, body, now);
+          break;
         }
         default:
           return json({ status: "invalid", reason: "not_found" }, 404, cors);
       }
+      return reply(path, body, result, started, cors);
     } catch (err) {
       console.error(path, err);
       return json({ status: "invalid", reason: "server_error" }, 500, cors);
     }
   },
 };
+
+// one structured line per app-level outcome: Workers Logs indexes the object's keys as filterable fields.
+// Never the account uuid or run id - those are the player's secret and this log is forever.
+function reply(path, body, result, started, cors) {
+  console.log(compact({
+    message: `${path} ${result.status}${result.reason ? " " + result.reason : ""}`,
+    route: path,
+    status: result.status,
+    reason: result.reason,
+    floor: body.floor,
+    compat_key: body.compat_key,
+    game_version: body.game_version,
+    encounter_id: result.encounter_id ?? body.encounter_id,
+    served: result.status === "ok" && result.ghost !== undefined ? true : undefined,
+    ghost_name: result.ghost?.display_name,
+    hygiene_reason: body.reason,
+    recorded: result.recorded,
+    quarantined: result.quarantined,
+    ms: Date.now() - started,
+  }));
+  return json(result, 200, cors);
+}
+
+function compact(fields) {
+  return Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined));
+}
 
 function json(data, status, headers) {
   return new Response(JSON.stringify(data), {

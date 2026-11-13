@@ -9,7 +9,7 @@ The server stores builds as opaque blobs and knows no game rules. Every integrit
 - `wrangler.toml` project config: name, entry point, D1 binding, `POOL_CAP`, `QUARANTINE_REPORTERS`, prod `ALLOWED_ORIGINS`
 - `.dev.vars` overrides for `wrangler dev` (`ALLOWED_ORIGINS="*"`)
 - `schema.sql` tables; additive, safe to re-run
-- `src/index.js` routing, CORS, body parsing, size cap
+- `src/index.js` routing, CORS, body parsing, size cap, and one structured log line per outcome (route, status, floor, compat key, encounter id, served, ghost name, hygiene result, ms - never an account uuid or run id). Filter on these fields in the dashboard's Workers Logs view
 - `src/validate.js` envelope checks (shape, ranges, id formats)
 - `src/exchange.js` account upsert, submission upsert, pool trim, serve by trust tier, encounter row
 - `src/hygiene.js` rebuild-failed reports (quarantine) and player reports (stored for review)
