@@ -16,7 +16,7 @@ database_id = "ea616ebf-41e0-4d62-952d-5d3c794dfa0c"
 # staging: a separate Worker + database, deployed from the `staging` branch with `wrangler deploy --env staging`.
 # Named environments inherit nothing, so vars and bindings are repeated here.
 [env.staging]
-name = "spellslot-server-staging"
+name = "spellslot-staging-server"
 
 [env.staging.vars]
 ALLOWED_ORIGINS = "*"
