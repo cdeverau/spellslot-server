@@ -48,10 +48,24 @@ Response: `{ "status": "ok", "encounter_id": "...", "ghost": { "display_name": "
 
 ## Day to day
 
-- `npm run dev` + point the game at the dev server (`GlobalConfig.USE_DEV_SERVER`; the game uses `127.0.0.1`, not `localhost`, because Godot resolves `localhost` to `::1` and wrangler dev listens on IPv4 only). Localhost is exempt from the browser's mixed-content rule, so the web build can test against it too.
+- `npm run dev` + point the game at the dev server (`GlobalConfig.USE_LOCAL_SERVER`; `USE_DEV_SERVER` targets staging instead; the game uses `127.0.0.1`, not `localhost`, because Godot resolves `localhost` to `::1` and wrangler dev listens on IPv4 only). Localhost is exempt from the browser's mixed-content rule, so the web build can test against it too.
 - `npm run deploy` after any server change. Schema changes: edit `schema.sql` additively, run `db:local` and `db:remote`.
 - Inspect data: `npx wrangler d1 execute spellslot-pool --local --command "select account_uuid, floor, display_name, received_at, quarantined_at from submissions"` (drop `--local` for prod).
 - Logs: `npx wrangler tail`.
+
+## Staging
+
+A second Worker (`spellslot-server-staging`) with its own D1 database, defined as the `staging` environment in
+`wrangler.toml`. Code reaches it from the `staging` branch; production only ever gets code staging has already run.
+One-time setup:
+
+1. `npx wrangler d1 create spellslot-pool-staging` and paste the id into the `[[env.staging.d1_databases]]` block.
+2. `npm run db:staging` to create the tables.
+3. Dashboard: Workers & Pages > Create > import this repo again as a new Worker, production branch `staging`,
+   deploy command `npx wrangler deploy --env staging`. Or deploy by hand with `npm run deploy:staging`.
+
+Schema changes go to staging first (`npm run db:staging`), production second (`npm run db:remote`).
+The game targets it with `GlobalConfig.USE_DEV_SERVER`; the test suite with `--staging` or the Test Staging button.
 
 ## Testing
 

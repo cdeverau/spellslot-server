@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
     "db:local": "wrangler d1 execute spellslot-pool --local --file=schema.sql",
+    "db:staging": "wrangler d1 execute spellslot-pool-staging --remote --file=schema.sql --env staging",
     "db:remote": "wrangler d1 execute spellslot-pool --remote --file=schema.sql",
     "smoke": "node scripts/smoke.mjs"
   },
