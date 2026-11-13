@@ -65,6 +65,14 @@ One-time setup:
    deploy command `npx wrangler deploy --env staging`. Or deploy by hand with `npm run deploy:staging`.
 
 Schema changes go to staging first (`npm run db:staging`), production second (`npm run db:remote`).
+
+Database tools (all prompt or print before touching anything remote):
+
+- `npm run db:staging:reset` drops and recreates staging's tables (`scripts/reset.sql` then `schema.sql`).
+- `npm run db:clone` copies production into staging: export, reset, import, `schema.sql` on top. The dump sits in
+  the gitignored `dumps/` folder for the duration and is deleted afterwards - it holds every account uuid.
+- `npm run rollback -- 30` restores production to 30 minutes ago via D1 Time Travel (any point in the last 30 days).
+  Whole-database: legitimate rows after that moment go too. For one bad account, a targeted `DELETE` is the better tool.
 The game targets it with `GlobalConfig.USE_DEV_SERVER`; the test suite with `--staging` or the Test Staging button.
 
 ## Testing

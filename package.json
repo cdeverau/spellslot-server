@@ -8,7 +8,10 @@
     "deploy:staging": "wrangler deploy --env staging",
     "db:local": "wrangler d1 execute spellslot-pool --local --file=schema.sql",
     "db:staging": "wrangler d1 execute spellslot-pool-staging --remote --file=schema.sql --env staging",
+    "db:staging:reset": "wrangler d1 execute spellslot-pool-staging --remote --env staging --file=scripts/reset.sql && npm run db:staging",
+    "db:clone": "node scripts/clone.mjs",
     "db:remote": "wrangler d1 execute spellslot-pool --remote --file=schema.sql",
+    "rollback": "node scripts/rollback.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "devDependencies": {
