@@ -12,3 +12,8 @@ QUARANTINE_REPORTERS = "2"
 binding = "DB"
 database_name = "spellslot-pool"
 database_id = "ea616ebf-41e0-4d62-952d-5d3c794dfa0c"
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
