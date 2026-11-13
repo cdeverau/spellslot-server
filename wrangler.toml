@@ -1,0 +1,14 @@
+name = "spellslot-server"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# .dev.vars overrides these under `wrangler dev` (ALLOWED_ORIGINS="*" there)
+[vars]
+ALLOWED_ORIGINS = "https://html-classic.itch.zone,https://html.itch.zone"
+POOL_CAP = "300"
+QUARANTINE_REPORTERS = "2"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spellslot-pool"
+database_id = "ea616ebf-41e0-4d62-952d-5d3c794dfa0c"

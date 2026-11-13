@@ -1,0 +1,15 @@
+{
+  "name": "spellslot-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute spellslot-pool --local --file=schema.sql",
+    "db:remote": "wrangler d1 execute spellslot-pool --remote --file=schema.sql",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}
